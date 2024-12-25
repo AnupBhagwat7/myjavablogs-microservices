@@ -1,5 +1,6 @@
 package in.myjavablog.notification;
 
+import in.myjavablog.clients.notification.NotificationRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +17,10 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @PostMapping("/send")
-    public void sendNotification(@RequestBody NotificationRequest notificationRequest){
+    public void sendNotification(@RequestBody NotificationRequest notificationRequest) {
 
         notificationService.send(notificationRequest);
 
-        log.debug("Notification is triggered to customer {} successfully at {}", notificationRequest.getSent_to_customerid(),notificationRequest.getSent_at());
+        log.debug("Notification is triggered to customer {} successfully at {}", notificationRequest.getSent_to_customerid(), notificationRequest.getSent_at());
     }
 }

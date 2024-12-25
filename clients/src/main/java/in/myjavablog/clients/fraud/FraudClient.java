@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface FraudClient {
 
     @GetMapping("/api/v1/fraud/{custId}")
-    FraudDetectionResult chedkFraudCustomer(@PathVariable("custId") Long custId);
+    FraudDetectionResult checkFraudCustomer(@PathVariable("custId") Long custId);
 
 }

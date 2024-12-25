@@ -6,8 +6,8 @@ import in.myjavablog.clients.notification.NotificationClient;
 import in.myjavablog.clients.notification.NotificationRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 
@@ -18,11 +18,11 @@ public class CustomerService {
 
     private CustomerRepository customerRepository;
 
-    private RestTemplate restTemplate;
-
     private FraudClient fraudClient;
 
     private NotificationClient notificationClient;
+
+    private KafkaTemplate<String, NotificationRequest> kafkaTemplate;
 
     public Customer registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
 
@@ -31,10 +31,8 @@ public class CustomerService {
 
         customerRepository.saveAndFlush(customer);
 
-        //FraudDetectionResult fraudDetectionResult = restTemplate.getForObject("http://FRAUD/api/v1/fraud/{custId}", FraudDetectionResult.class, customer.getId());
-
         //Check fraud
-        FraudDetectionResult fraudDetectionResult = fraudClient.chedkFraudCustomer(customer.getId());
+        FraudDetectionResult fraudDetectionResult = fraudClient.checkFraudCustomer(customer.getId());
         log.debug("Fraud check response for customer {} is {} ", customer.getFirstName(),fraudDetectionResult.isFraudster());
 
         //Send Notification
@@ -42,7 +40,9 @@ public class CustomerService {
         .message("Welcome , "+ customer.getFirstName() + " to MyJavaBlog ").sent_from("MyJavaBlog")
         .sent_to_email(customer.getEmail()).sent_at(LocalDateTime.now()).build();
 
-        notificationClient.sendNotification(notificationRequest);
+        // notificationClient.sendNotification(notificationRequest);
+        kafkaTemplate.send("notifications_topic", notificationRequest);
+
         log.debug("Notification sent to customer {} at {} ", customer.getFirstName(),notificationRequest.getSent_at());
 
         return customer;
